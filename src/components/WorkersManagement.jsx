@@ -1,52 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { supabase } from '../lib/supabase'
 
 export function WorkersManagement() {
-  const [workers, setWorkers] = useState([
-    {
-      id: 1,
-      name: 'Anna Müller',
-      email: 'anna.mueller@email.com',
-      phone: '+49 30 55566677',
-      specialties: 'Grundreinigung, Fensterreinigung',
-      hourlyRate: '15.00',
-      availability: 'Montag-Freitag',
-      notes: 'Erfahrene Reinigungskraft, spricht Deutsch und Englisch'
-    },
-    {
-      id: 2,
-      name: 'Klaus Fischer',
-      email: 'klaus.fischer@email.com',
-      phone: '+49 89 99887766',
-      specialties: 'Tiefenreinigung, Teppichreinigung',
-      hourlyRate: '18.00',
-      availability: 'Dienstag-Samstag',
-      notes: 'Spezialist für Tiefenreinigung und Desinfektion'
-    },
-    {
-      id: 3,
-      name: 'Sophie Wagner',
-      email: 'sophie.wagner@email.com',
-      phone: '+49 40 44556688',
-      specialties: 'Büroreinigung, Fensterreinigung',
-      hourlyRate: '16.50',
-      availability: 'Flexible Arbeitszeiten',
-      notes: 'Bevorzugt Gewerbereiniung, sehr zuverlässig'
-    },
-    {
-      id: 4,
-      name: 'Michael Braun',
-      email: 'michael.braun@email.com',
-      phone: '+49 221 33445566',
-      specialties: 'Industriereinigung, Fassadenreinigung',
-      hourlyRate: '20.00',
-      availability: 'Wochenende',
-      notes: 'Spezialist für große Industrieanlagen'
-    }
-  ])
+  const [workers, setWorkers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingWorker, setEditingWorker] = useState(null)
@@ -54,20 +16,81 @@ export function WorkersManagement() {
     name: '',
     email: '',
     phone: '',
-    specialties: '',
+    specialities: '',
     hourlyRate: '',
     availability: '',
     notes: ''
   })
 
-  const handleAddWorker = (e) => {
-    e.preventDefault()
-    const newWorker = {
-      id: Date.now(),
-      ...formData
+  // Fetch workers from Supabase
+  const fetchWorkers = async () => {
+    try {
+      setLoading(true)
+      setError('')
+      
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('Sie müssen angemeldet sein, um auf die Mitarbeiterdaten zuzugreifen.')
+      }
+      
+      const { data, error } = await supabase
+        .from('employees')
+        .select('*')
+        .order('id', { ascending: false })
+      
+      if (error) {
+        throw error
+      }
+      
+      setWorkers(data || [])
+    } catch (error) {
+      console.error('Error fetching workers:', error)
+      setError('Fehler beim Laden der Mitarbeiter: ' + error.message)
+    } finally {
+      setLoading(false)
     }
-    setWorkers([...workers, newWorker])
-    resetForm()
+  }
+
+  // Load workers on component mount
+  useEffect(() => {
+    fetchWorkers()
+  }, [])
+
+  const handleAddWorker = async (e) => {
+    e.preventDefault()
+    
+    try {
+      setLoading(true)
+      setError('')
+      
+      // Convert hourlyRate to number for database
+      const workerData = {
+        ...formData,
+        hourlyRate: parseFloat(formData.hourlyRate) || 0
+      }
+      
+      const { data, error } = await supabase
+        .from('employees')
+        .insert([workerData])
+        .select()
+      
+      if (error) {
+        throw error
+      }
+      
+      // Add new worker to local state for immediate UI update
+      if (data && data.length > 0) {
+        setWorkers([data[0], ...workers])
+      }
+      
+      resetForm()
+    } catch (error) {
+      console.error('Error adding worker:', error)
+      setError('Fehler beim Hinzufügen des Mitarbeiters: ' + error.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleEditWorker = (worker) => {
@@ -76,22 +99,76 @@ export function WorkersManagement() {
     setShowAddForm(true)
   }
 
-  const handleUpdateWorker = (e) => {
+  const handleUpdateWorker = async (e) => {
     e.preventDefault()
-    setWorkers(workers.map(worker => 
-      worker.id === editingWorker ? { ...formData, id: editingWorker } : worker
-    ))
-    resetForm()
+    
+    try {
+      setLoading(true)
+      setError('')
+      
+      // Convert hourlyRate to number for database
+      const workerData = {
+        ...formData,
+        hourlyRate: parseFloat(formData.hourlyRate) || 0
+      }
+      
+      const { data, error } = await supabase
+        .from('employees')
+        .update(workerData)
+        .eq('id', editingWorker)
+        .select()
+      
+      if (error) {
+        throw error
+      }
+      
+      // Update local state for immediate UI update
+      if (data && data.length > 0) {
+        setWorkers(workers.map(worker => 
+          worker.id === editingWorker ? data[0] : worker
+        ))
+      }
+      
+      resetForm()
+    } catch (error) {
+      console.error('Error updating worker:', error)
+      setError('Fehler beim Aktualisieren des Mitarbeiters: ' + error.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleDeleteWorker = (id) => {
-    if (confirm('Sind Sie sicher, dass Sie diesen Mitarbeiter löschen möchten?')) {
+  const handleDeleteWorker = async (id) => {
+    if (!confirm('Sind Sie sicher, dass Sie diesen Mitarbeiter löschen möchten?')) {
+      return
+    }
+    
+    try {
+      setLoading(true)
+      setError('')
+      
+      const { error } = await supabase
+        .from('employees')
+        .delete()
+        .eq('id', id)
+      
+      if (error) {
+        throw error
+      }
+      
+      // Remove worker from local state for immediate UI update
       setWorkers(workers.filter(worker => worker.id !== id))
+      
+    } catch (error) {
+      console.error('Error deleting worker:', error)
+      setError('Fehler beim Löschen des Mitarbeiters: ' + error.message)
+    } finally {
+      setLoading(false)
     }
   }
 
   const resetForm = () => {
-    setFormData({ name: '', email: '', phone: '', specialties: '', hourlyRate: '', availability: '', notes: '' })
+    setFormData({ name: '', email: '', phone: '', specialities: '', hourlyRate: '', availability: '', notes: '' })
     setShowAddForm(false)
     setEditingWorker(null)
   }
@@ -108,7 +185,7 @@ export function WorkersManagement() {
           className="btn-primary w-full sm:w-auto touch-manipulation btn-touch"
         >
           <span className="hidden sm:inline">{showAddForm ? '✕ Abbrechen' : '+ Neuer Mitarbeiter'}</span>
-          <span className="sm:hidden">{showAddForm ? '✕' : '+ Team'}</span>
+          <span className="sm:hidden">{showAddForm ? '✕' : '+ Mitarbeiter'}</span>
         </Button>
       </div>
 
@@ -180,8 +257,8 @@ export function WorkersManagement() {
                 <Label htmlFor="specialties" className="text-sm font-medium text-foreground">Spezialisierungen</Label>
                 <Input
                   id="specialties"
-                  value={formData.specialties}
-                  onChange={(e) => setFormData({...formData, specialties: e.target.value})}
+                  value={formData.specialities}
+                  onChange={(e) => setFormData({...formData, specialities: e.target.value})}
                   placeholder="Grundreinigung, Fenster"
                   required
                   className="input-primary h-10 sm:h-12"
@@ -209,15 +286,49 @@ export function WorkersManagement() {
                 />
               </div>
               <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                <Button type="submit" className="flex-1 btn-primary h-10 sm:h-12 touch-manipulation">
-                  <span className="hidden sm:inline">{editingWorker ? 'Mitarbeiter aktualisieren' : 'Mitarbeiter hinzufügen'}</span>
-                  <span className="sm:hidden">{editingWorker ? 'Aktualisieren' : 'Hinzufügen'}</span>
+                <Button type="submit" disabled={loading} className="flex-1 btn-primary h-10 sm:h-12 touch-manipulation disabled:opacity-50">
+                  {loading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span className="hidden sm:inline">Speichern...</span>
+                      <span className="sm:hidden">...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="hidden sm:inline">{editingWorker ? 'Mitarbeiter aktualisieren' : 'Mitarbeiter hinzufügen'}</span>
+                      <span className="sm:hidden">{editingWorker ? 'Aktualisieren' : 'Hinzufügen'}</span>
+                    </>
+                  )}
                 </Button>
                 <Button type="button" onClick={resetForm} className="btn-secondary h-10 sm:h-12 touch-manipulation">
                   Abbrechen
                 </Button>
               </div>
             </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Loading and Error States */}
+      {loading && (
+        <Card className="card-primary">
+          <CardContent className="p-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Lade Mitarbeiter...</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {error && (
+        <Card className="border-l-4 border-l-red-500 card-primary">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-start space-x-3">
+              <div className="text-red-500 text-xl">⚠️</div>
+              <div>
+                <p className="font-medium text-red-700">Fehler</p>
+                <p className="text-red-600 text-sm mt-1">{error}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -249,7 +360,7 @@ export function WorkersManagement() {
                     {/* Worker Info - Mobile friendly grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                       <div className="space-y-1">
-                        <p><span className="font-medium text-foreground">Spezialisierungen:</span> <span className="text-muted-foreground">{worker.specialties}</span></p>
+                        <p><span className="font-medium text-foreground">Spezialisierungen:</span> <span className="text-muted-foreground">{worker.specialities}</span></p>
                         <p><span className="font-medium text-foreground">Verfügbarkeit:</span> <span className="text-muted-foreground">{worker.availability}</span></p>
                       </div>
                       <div className="space-y-1">
@@ -272,7 +383,8 @@ export function WorkersManagement() {
                     </Button>
                     <Button 
                       onClick={() => handleDeleteWorker(worker.id)}
-                      className="flex-1 lg:flex-initial h-9 sm:h-10 text-xs sm:text-sm touch-manipulation"
+                      disabled={loading}
+                      className="flex-1 lg:flex-initial h-9 sm:h-10 text-xs sm:text-sm touch-manipulation disabled:opacity-50"
                       style={{backgroundColor: 'hsl(var(--status-error))', color: 'white'}}
                       size="sm"
                     >
@@ -326,7 +438,7 @@ export function WorkersManagement() {
         <Card className="hover-lift card-primary">
           <CardContent className="p-4 sm:p-6 text-center">
             <div className="text-xl sm:text-2xl font-bold text-warning">
-              {workers.filter(w => w.specialties.includes('Tiefenreinigung')).length}
+              {workers.filter(w => w.specialities.includes('Tiefenreinigung')).length}
             </div>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">Tiefenreinigung</p>
           </CardContent>
