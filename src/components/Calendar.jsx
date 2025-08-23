@@ -239,12 +239,12 @@ export function Calendar() {
 
   const getMitarbeiterColor = (mitarbeiter) => {
     const colors = {
-      'Anna Müller': 'bg-purple-100 text-purple-800',
-      'Klaus Fischer': 'bg-blue-100 text-blue-800',
-      'Sophie Wagner': 'bg-pink-100 text-pink-800',
-      'Michael Braun': 'bg-orange-100 text-orange-800'
+      'Anna Müller': 'bg-gradient-info text-info',
+      'Klaus Fischer': 'bg-gradient-success text-success',
+      'Sophie Wagner': 'bg-gradient-warning text-warning',
+      'Michael Braun': 'bg-gradient-error text-error'
     }
-    return colors[mitarbeiter] || 'bg-gray-100 text-gray-800'
+    return colors[mitarbeiter] || 'bg-muted text-muted-foreground'
   }
 
   const daysInMonth = getDaysInMonth(currentDate)
@@ -308,7 +308,7 @@ export function Calendar() {
       </div>
 
       {/* Navigation */}
-      <Card className="hover-lift">
+      <Card className="hover-lift card-primary">
         <CardContent className="pt-4 sm:pt-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 mb-4">
             {viewMode === 'month' ? (
