@@ -1,26 +1,37 @@
-import { useState } from 'react'
 import { LoginPage } from './components/LoginPage'
 import { Dashboard } from './components/Dashboard'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 
-function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+function AppContent() {
+  const { user, loading, signOut } = useAuth()
 
-  const handleLogin = () => {
-    setIsLoggedIn(true)
-  }
-
-  const handleLogout = () => {
-    setIsLoggedIn(false)
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2dd4bf] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Wird geladen...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <>
-      {isLoggedIn ? (
-        <Dashboard onLogout={handleLogout} />
+      {user ? (
+        <Dashboard onLogout={signOut} />
       ) : (
-        <LoginPage onLogin={handleLogin} />
+        <LoginPage />
       )}
     </>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   )
 }
 
