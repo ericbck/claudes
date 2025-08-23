@@ -97,113 +97,123 @@ export function WorkersManagement() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Mitarbeiterverwaltung</h1>
-          <p className="text-gray-600 mt-1">Verwalten Sie Ihr Reinigungsteam</p>
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Mitarbeiterverwaltung</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">Verwalten Sie Ihr Reinigungsteam</p>
         </div>
         <Button 
           onClick={() => setShowAddForm(!showAddForm)}
-          className="bg-[#2dd4bf] hover:bg-[#26c2ab] transition-all-smooth"
+          className="btn-primary w-full sm:w-auto touch-manipulation btn-touch"
         >
-          {showAddForm ? '✕ Abbrechen' : '+ Neuer Mitarbeiter'}
+          <span className="hidden sm:inline">{showAddForm ? '✕ Abbrechen' : '+ Neuer Mitarbeiter'}</span>
+          <span className="sm:hidden">{showAddForm ? '✕' : '+ Team'}</span>
         </Button>
       </div>
 
       {/* Add/Edit Worker Form */}
       {showAddForm && (
-        <Card className="animate-slide-up hover-lift">
-          <CardHeader>
-            <CardTitle className="text-[#2dd4bf]">{editingWorker ? 'Mitarbeiter bearbeiten' : 'Neuen Mitarbeiter hinzufügen'}</CardTitle>
-            <CardDescription>Geben Sie die Mitarbeiterinformationen ein</CardDescription>
+        <Card className="animate-slide-up hover-lift card-primary">
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-brand-primary text-lg sm:text-xl">
+              {editingWorker ? 'Mitarbeiter bearbeiten' : 'Neuen Mitarbeiter hinzufügen'}
+            </CardTitle>
+            <CardDescription className="text-muted-foreground text-sm sm:text-base">
+              Geben Sie die Mitarbeiterinformationen ein
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={editingWorker ? handleUpdateWorker : handleAddWorker} className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Vollständiger Name</Label>
+          <CardContent className="px-4 sm:px-6">
+            <form onSubmit={editingWorker ? handleUpdateWorker : handleAddWorker} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium text-foreground">Vollständiger Name</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="Name des Mitarbeiters"
+                  placeholder="Anna Müller"
                   required
-                  className="transition-all-smooth focus:ring-[#2dd4bf]"
+                  className="input-primary h-10 sm:h-12"
                 />
               </div>
-              <div>
-                <Label htmlFor="email">E-Mail</Label>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-foreground">E-Mail</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  placeholder="E-Mail-Adresse"
+                  placeholder="anna@email.de"
                   required
-                  className="transition-all-smooth focus:ring-[#2dd4bf]"
+                  className="input-primary h-10 sm:h-12"
+                  inputMode="email"
                 />
               </div>
-              <div>
-                <Label htmlFor="phone">Telefon</Label>
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium text-foreground">Telefon</Label>
                 <Input
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  placeholder="Telefonnummer"
+                  placeholder="+49 30 12345678"
                   required
-                  className="transition-all-smooth focus:ring-[#2dd4bf]"
+                  className="input-primary h-10 sm:h-12"
+                  inputMode="tel"
                 />
               </div>
-              <div>
-                <Label htmlFor="hourlyRate">Stundenlohn (€)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="hourlyRate" className="text-sm font-medium text-foreground">Stundenlohn (€)</Label>
                 <Input
                   id="hourlyRate"
                   type="number"
                   step="0.50"
+                  min="0"
                   value={formData.hourlyRate}
                   onChange={(e) => setFormData({...formData, hourlyRate: e.target.value})}
-                  placeholder="Stundenlohn"
+                  placeholder="15.00"
                   required
-                  className="transition-all-smooth focus:ring-[#2dd4bf]"
+                  className="input-primary h-10 sm:h-12"
+                  inputMode="decimal"
                 />
               </div>
-              <div>
-                <Label htmlFor="specialties">Spezialisierungen</Label>
+              <div className="space-y-2">
+                <Label htmlFor="specialties" className="text-sm font-medium text-foreground">Spezialisierungen</Label>
                 <Input
                   id="specialties"
                   value={formData.specialties}
                   onChange={(e) => setFormData({...formData, specialties: e.target.value})}
-                  placeholder="z.B. Grundreinigung, Tiefenreinigung"
+                  placeholder="Grundreinigung, Fenster"
                   required
-                  className="transition-all-smooth focus:ring-[#2dd4bf]"
+                  className="input-primary h-10 sm:h-12"
                 />
               </div>
-              <div>
-                <Label htmlFor="availability">Verfügbarkeit</Label>
+              <div className="space-y-2">
+                <Label htmlFor="availability" className="text-sm font-medium text-foreground">Verfügbarkeit</Label>
                 <Input
                   id="availability"
                   value={formData.availability}
                   onChange={(e) => setFormData({...formData, availability: e.target.value})}
-                  placeholder="z.B. Montag-Freitag, Wochenende"
+                  placeholder="Montag-Freitag"
                   required
-                  className="transition-all-smooth focus:ring-[#2dd4bf]"
+                  className="input-primary h-10 sm:h-12"
                 />
               </div>
-              <div className="col-span-2">
-                <Label htmlFor="notes">Notizen</Label>
+              <div className="col-span-1 sm:col-span-2 space-y-2">
+                <Label htmlFor="notes" className="text-sm font-medium text-foreground">Notizen</Label>
                 <Input
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                  placeholder="Zusätzliche Informationen über den Mitarbeiter"
-                  className="transition-all-smooth focus:ring-[#2dd4bf]"
+                  placeholder="Zusätzliche Informationen"
+                  className="input-primary h-10 sm:h-12"
                 />
               </div>
-              <div className="col-span-2 flex space-x-2">
-                <Button type="submit" className="flex-1 bg-[#2dd4bf] hover:bg-[#26c2ab] transition-all-smooth">
-                  {editingWorker ? 'Mitarbeiter aktualisieren' : 'Mitarbeiter hinzufügen'}
+              <div className="col-span-1 sm:col-span-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                <Button type="submit" className="flex-1 btn-primary h-10 sm:h-12 touch-manipulation">
+                  <span className="hidden sm:inline">{editingWorker ? 'Mitarbeiter aktualisieren' : 'Mitarbeiter hinzufügen'}</span>
+                  <span className="sm:hidden">{editingWorker ? 'Aktualisieren' : 'Hinzufügen'}</span>
                 </Button>
-                <Button type="button" variant="outline" onClick={resetForm} className="transition-all-smooth">
+                <Button type="button" onClick={resetForm} className="btn-secondary h-10 sm:h-12 touch-manipulation">
                   Abbrechen
                 </Button>
               </div>
@@ -213,47 +223,63 @@ export function WorkersManagement() {
       )}
 
       {/* Workers List */}
-      <div className="grid gap-4">
+      <div className="grid gap-3 sm:gap-4">
         {workers.map((worker) => (
-          <Card key={worker.id} className="hover-lift transition-all-smooth">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-[#2dd4bf]">{worker.name}</h3>
-                      <p className="text-sm text-gray-600">{worker.email}</p>
-                      <p className="text-sm text-gray-600">{worker.phone}</p>
+          <Card key={worker.id} className="hover-lift card-primary">
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-4">
+                {/* Mobile: Stacked layout, Desktop: Side by side */}
+                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start space-y-4 lg:space-y-0">
+                  <div className="flex-1 min-w-0">
+                    {/* Header Info */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-2 sm:space-y-0 mb-3">
+                      <div className="min-w-0">
+                        <h3 className="text-lg sm:text-xl font-semibold text-brand-primary truncate">{worker.name}</h3>
+                        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-1 sm:space-y-0 text-sm text-muted-foreground">
+                          <span className="truncate">{worker.email}</span>
+                          <span>{worker.phone}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <span className="text-lg sm:text-xl font-bold text-success">€{worker.hourlyRate}</span>
+                        <span className="text-xs sm:text-sm text-muted-foreground">/Std</span>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm"><span className="font-medium">Stundenlohn:</span> €{worker.hourlyRate}/Std</p>
-                      <p className="text-sm"><span className="font-medium">Verfügbarkeit:</span> {worker.availability}</p>
+                    
+                    {/* Worker Info - Mobile friendly grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
+                      <div className="space-y-1">
+                        <p><span className="font-medium text-foreground">Spezialisierungen:</span> <span className="text-muted-foreground">{worker.specialties}</span></p>
+                        <p><span className="font-medium text-foreground">Verfügbarkeit:</span> <span className="text-muted-foreground">{worker.availability}</span></p>
+                      </div>
+                      <div className="space-y-1">
+                        {worker.notes && (
+                          <p><span className="font-medium text-foreground">Notizen:</span> <span className="text-muted-foreground">{worker.notes}</span></p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="mt-3">
-                    <p className="text-sm"><span className="font-medium">Spezialisierungen:</span> {worker.specialties}</p>
-                    {worker.notes && (
-                      <p className="text-sm mt-1"><span className="font-medium">Notizen:</span> {worker.notes}</p>
-                    )}
+                  
+                  {/* Action Buttons - Mobile: Full width, Desktop: Right aligned */}
+                  <div className="flex flex-row lg:flex-col space-x-2 lg:space-x-0 lg:space-y-2 lg:ml-4 flex-shrink-0">
+                    <Button 
+                      onClick={() => handleEditWorker(worker)}
+                      className="flex-1 lg:flex-initial btn-secondary h-9 sm:h-10 text-xs sm:text-sm touch-manipulation"
+                      size="sm"
+                    >
+                      <span className="hidden sm:inline">Bearbeiten</span>
+                      <span className="sm:hidden">✏️</span>
+                    </Button>
+                    <Button 
+                      onClick={() => handleDeleteWorker(worker.id)}
+                      className="flex-1 lg:flex-initial h-9 sm:h-10 text-xs sm:text-sm touch-manipulation"
+                      style={{backgroundColor: 'hsl(var(--status-error))', color: 'white'}}
+                      size="sm"
+                    >
+                      <span className="hidden sm:inline">Löschen</span>
+                      <span className="sm:hidden">🗑️</span>
+                    </Button>
                   </div>
-                </div>
-                <div className="flex space-x-2 ml-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleEditWorker(worker)}
-                    className="transition-all-smooth hover:border-[#2dd4bf] hover:text-[#2dd4bf]"
-                  >
-                    Bearbeiten
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    onClick={() => handleDeleteWorker(worker.id)}
-                    className="transition-all-smooth"
-                  >
-                    Löschen
-                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -262,43 +288,47 @@ export function WorkersManagement() {
       </div>
 
       {workers.length === 0 && (
-        <Card className="hover-lift">
-          <CardContent className="pt-6 text-center">
-            <p className="text-gray-500">Keine Mitarbeiter gefunden. Fügen Sie Ihren ersten Mitarbeiter hinzu, um zu beginnen.</p>
+        <Card className="card-secondary">
+          <CardContent className="p-6 sm:p-8 text-center">
+            <div className="space-y-3">
+              <div className="text-4xl sm:text-5xl mb-4">🧹</div>
+              <p className="text-muted-foreground text-sm sm:text-base">Noch kein Team vorhanden</p>
+              <p className="text-muted-foreground text-xs sm:text-sm">Fügen Sie Ihren ersten Mitarbeiter hinzu, um zu beginnen.</p>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card className="hover-lift">
-          <CardContent className="pt-6 text-center">
-            <div className="text-2xl font-bold text-[#2dd4bf]">{workers.length}</div>
-            <p className="text-sm text-gray-600">Mitarbeiter gesamt</p>
+      {/* Quick Stats - Responsive Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="hover-lift card-primary">
+          <CardContent className="p-4 sm:p-6 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-brand-primary">{workers.length}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">Mitarbeiter</p>
           </CardContent>
         </Card>
-        <Card className="hover-lift">
-          <CardContent className="pt-6 text-center">
-            <div className="text-2xl font-bold text-green-600">
+        <Card className="hover-lift card-primary">
+          <CardContent className="p-4 sm:p-6 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-success">
               €{workers.length > 0 ? (workers.reduce((sum, w) => sum + parseFloat(w.hourlyRate), 0) / workers.length).toFixed(2) : '0.00'}
             </div>
-            <p className="text-sm text-gray-600">Durchschnittlicher Stundenlohn</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">Durchschn. Lohn</p>
           </CardContent>
         </Card>
-        <Card className="hover-lift">
-          <CardContent className="pt-6 text-center">
-            <div className="text-2xl font-bold text-purple-600">
+        <Card className="hover-lift card-primary">
+          <CardContent className="p-4 sm:p-6 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-info">
               {workers.filter(w => w.availability.includes('Montag')).length}
             </div>
-            <p className="text-sm text-gray-600">Verfügbar montags</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">Montags verfügbar</p>
           </CardContent>
         </Card>
-        <Card className="hover-lift">
-          <CardContent className="pt-6 text-center">
-            <div className="text-2xl font-bold text-orange-600">
+        <Card className="hover-lift card-primary">
+          <CardContent className="p-4 sm:p-6 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-warning">
               {workers.filter(w => w.specialties.includes('Tiefenreinigung')).length}
             </div>
-            <p className="text-sm text-gray-600">Tiefenreinigung-Spezialisten</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">Tiefenreinigung</p>
           </CardContent>
         </Card>
       </div>
