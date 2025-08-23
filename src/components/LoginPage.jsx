@@ -17,7 +17,7 @@ export function LoginPage({ onLogin }) {
     setIsLoading(true)
 
     // Check credentials
-    if (email === 'eric.baackt@outlook.de' && password === 'tata.lela13') {
+    if (email === 'eric.baack@outlook.de' && password === 'tata.lela13') {
       // Simulate loading
       setTimeout(() => {
         setIsLoading(false)
